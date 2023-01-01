@@ -59,13 +59,14 @@ app
 app.post("/api/users/:_id/exercises", (req, res) => {
   const { description } = req.body;
   const duration = parseInt(req.body.duration);
-  const date = req.body.date ? "Mon Jan 01 1990" : "Thu Nov 04 2021";
+  const date = req.body.date ? req.body.date : new Date().toDateString();
+  // ? "Mon Jan 01 1990" : "Thu Nov 04 2021";
   const id = req.params._id;
 
   const exercise = {
-    date,
-    duration,
     description,
+    duration,
+    date,
   };
 
   User.findByIdAndUpdate(
@@ -78,9 +79,9 @@ app.post("/api/users/:_id/exercises", (req, res) => {
     (err, user) => {
       if (user) {
         const updatedExercise = {
-          _id: id,
           username: user.username,
           ...exercise,
+          _id: id,
         };
         res.json(updatedExercise);
       }
@@ -97,7 +98,7 @@ app.get("/api/users/:_id/logs", (req, res) => {
         const logs = user.log;
         const filteredLogs = logs.map((log) => {
           const formattedDate = new Date(log.date).toISOString().split("T")[0];
-          return { ...logs, date: formattedDate.toString() };
+          return { ...logs, date: parseInt(formattedDate) };
         });
         const slicedLogs = limit ? filteredLogs.slice(0, limit) : filteredLogs;
         user.log = slicedLogs;
@@ -110,3 +111,4 @@ app.get("/api/users/:_id/logs", (req, res) => {
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log("Your app is listening on port " + listener.address().port);
 });
+// const mySecret = process.env['MONGO_URL']
